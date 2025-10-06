@@ -689,7 +689,7 @@ async function checkVersion(progress = "dotdot1") {
             document.getElementById("firmwareDescription").innerHTML = marked.parse(latest.body);
         }
         if (asset?.name) {
-            serverStatus.downloadURL = "https://ratgdo.github.io/" + gitRepo + "/firmware/" + asset.name;
+            serverStatus.downloadURL = "https://github.com/" + gitUser + "/" + gitRepo + "/releases/download/" + latest.tag_name + "/" + asset.name;
             msg = "You have newest release";
             if (serverStatus.firmwareVersion < latest.tag_name) {
                 // Newest version at GitHub is greater from that installed
