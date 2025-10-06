@@ -73,30 +73,35 @@ void drycontact_loop()
 
     if (doorControlType == 3)
     {
-        if (dryContactDoorOpen)
-        {
-            doorState = GarageDoorCurrentState::CURR_OPEN;
-        }
+        // For dry contact mode with reed switches, read pin states directly
+        // Pins are active low (INPUT_PULLUP), so LOW = switch closed/active
+        int openPinState = digitalRead(DRY_CONTACT_OPEN_PIN);
+        int closePinState = digitalRead(DRY_CONTACT_CLOSE_PIN);
 
-        if (dryContactDoorClose)
-        {
-            doorState = GarageDoorCurrentState::CURR_CLOSED;
-        }
+        bool openPinActive = (openPinState == LOW);
+        bool closePinActive = (closePinState == LOW);
 
-        if (!dryContactDoorClose && !dryContactDoorOpen)
-        {
-            if (previousDryContactDoorClose)
-            {
-                doorState = GarageDoorCurrentState::CURR_OPENING;
-            }
-            else if (previousDryContactDoorOpen)
-            {
-                doorState = GarageDoorCurrentState::CURR_CLOSING;
-            }
-        }
+        static GarageDoorCurrentState lastReportedState = GarageDoorCurrentState::UNKNOWN;
+        GarageDoorCurrentState newState = doorState;
 
-        previousDryContactDoorOpen = dryContactDoorOpen;
-        previousDryContactDoorClose = dryContactDoorClose;
+        if (openPinActive)
+        {
+            newState = GarageDoorCurrentState::CURR_OPEN;
+        }
+        else if (closePinActive)
+        {
+            newState = GarageDoorCurrentState::CURR_CLOSED;
+        }
+        // If neither pin is active, maintain last known state
+
+        if (newState != lastReportedState)
+        {
+            ESP_LOGI(TAG, "Door state changed to: %d (0=open, 1=closed, 2=opening, 3=closing, 4=stopped, 5=unknown)", newState);
+            lastReportedState = newState;
+        }
+        doorState = newState;
+        garage_door.current_state = newState;  // Update the actual state used by status.json
+        garage_door.active = true;  // Mark door as active so status.json reports the state
     }
     else if (userConfig->getDCOpenClose())
     {
