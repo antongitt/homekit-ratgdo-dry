@@ -182,14 +182,16 @@ void homekit_loop()
 
 homekit_value_t current_door_state_get()
 {
-    ESP_LOGD(TAG, "get current door state: %d", garage_door.current_state);
-    return HOMEKIT_UINT8_CPP(garage_door.current_state);
+    GarageDoorCurrentState state = (garage_door.current_state == 0xFF) ? CURR_CLOSED : garage_door.current_state;
+    ESP_LOGD(TAG, "get current door state: %d", state);
+    return HOMEKIT_UINT8_CPP(state);
 }
 
 homekit_value_t target_door_state_get()
 {
-    ESP_LOGD(TAG, "get target door state: %d", garage_door.target_state);
-    return HOMEKIT_UINT8_CPP(garage_door.target_state);
+    GarageDoorTargetState state = (garage_door.target_state == 0xFF) ? TGT_CLOSED : garage_door.target_state;
+    ESP_LOGD(TAG, "get target door state: %d", state);
+    return HOMEKIT_UINT8_CPP(state);
 }
 
 void target_door_state_set(const homekit_value_t value)
@@ -217,14 +219,16 @@ homekit_value_t obstruction_detected_get()
 
 homekit_value_t current_lock_state_get()
 {
-    ESP_LOGD(TAG, "get current lock state: %d", garage_door.current_lock);
-    return HOMEKIT_UINT8_CPP(garage_door.current_lock);
+    LockCurrentState state = (garage_door.current_lock == 0xFF) ? LockCurrentState::CURR_UNKNOWN : garage_door.current_lock;
+    ESP_LOGD(TAG, "get current lock state: %d", state);
+    return HOMEKIT_UINT8_CPP(state);
 }
 
 homekit_value_t target_lock_state_get()
 {
-    ESP_LOGD(TAG, "get target lock state: %d", garage_door.target_lock);
-    return HOMEKIT_UINT8_CPP(garage_door.target_lock);
+    LockTargetState state = (garage_door.target_lock == 0xFF) ? LockTargetState::TGT_UNLOCKED : garage_door.target_lock;
+    ESP_LOGD(TAG, "get target lock state: %d", state);
+    return HOMEKIT_UINT8_CPP(state);
 }
 
 void target_lock_state_set(const homekit_value_t value)
