@@ -18,6 +18,7 @@
 #include "config.h"
 #include "comms.h"
 #include "drycontact.h"
+#include "homekit.h"
 
 // Logger tag
 static const char *TAG = "ratgdo-drycontact";
@@ -85,6 +86,7 @@ void drycontact_loop()
     {
         // Single reed switch at open position, use 12-second timer for closing
         static _millis_t closingStartTime = 0;
+        static GarageDoorCurrentState lastNotifiedState = GarageDoorCurrentState::UNKNOWN;
 
         // Mark garage door as active for web interface
         garage_door.active = true;
@@ -126,8 +128,14 @@ void drycontact_loop()
             doorState = GarageDoorCurrentState::CURR_CLOSED;
         }
 
-        // Update garage_door.current_state to match doorState
-        garage_door.current_state = doorState;
+        // Update garage_door.current_state and notify HomeKit if state changed
+        if (doorState != lastNotifiedState)
+        {
+            ESP_LOGI(TAG, "Door state changed from %s to %s", DOOR_STATE(lastNotifiedState), DOOR_STATE(doorState));
+            garage_door.current_state = doorState;
+            notify_homekit_current_door_state_change(doorState);
+            lastNotifiedState = doorState;
+        }
 
         previousDryContactDoorOpen = dryContactDoorOpen;
         previousDryContactDoorClose = dryContactDoorClose;
