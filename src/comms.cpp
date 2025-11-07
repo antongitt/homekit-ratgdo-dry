@@ -2396,16 +2396,19 @@ void door_command_close()
                                        send_get_status(); // query in case we're wrong and it's stopped (Sec+2.0)
                                    });
     }
-    // Check door starts to close
-    checkDoorMoving.detach(); // just in case!
-    checkDoorMoving.once_ms(2000, []()
-                            {
-                                // If this timer fires (was not cancelled when we get notification that door is closing) then
-                                // it is likely that there is an error and door did not move from its open state.
-                                checkDoorCompleted.detach();
-                                ESP_LOGE(TAG, "Door is supposed to be closing but is not.  Current state: %s", DOOR_STATE(garage_door.current_state));
-                                notify_homekit_current_door_state_change(GarageDoorCurrentState::CURR_OPEN);
-                                notify_homekit_target_door_state_change(GarageDoorTargetState::TGT_OPEN); });
+    // Check door starts to close (skip for pure dry contact mode with single reed switch)
+    if (doorControlType != 3)
+    {
+        checkDoorMoving.detach(); // just in case!
+        checkDoorMoving.once_ms(2000, []()
+                                {
+                                    // If this timer fires (was not cancelled when we get notification that door is closing) then
+                                    // it is likely that there is an error and door did not move from its open state.
+                                    checkDoorCompleted.detach();
+                                    ESP_LOGE(TAG, "Door is supposed to be closing but is not.  Current state: %s", DOOR_STATE(garage_door.current_state));
+                                    notify_homekit_current_door_state_change(GarageDoorCurrentState::CURR_OPEN);
+                                    notify_homekit_target_door_state_change(GarageDoorTargetState::TGT_OPEN); });
+    }
 #endif
     return;
 }
@@ -2436,16 +2439,19 @@ void door_command_open()
                                        send_get_status(); // query in case we're wrong and it's stopped (Sec+2.0)
                                    });
     }
-    // Check door starts to open
-    checkDoorMoving.detach(); // just in case!
-    checkDoorMoving.once_ms(2000, []()
-                            {
-                                // If this timer fires (was not cancelled when we get notification that door is opening) then
-                                // it is likely that there is an error and door did not move from its closed state.
-                                checkDoorCompleted.detach();
-                                ESP_LOGE(TAG, "Door is supposed to be opening but is not.  Current state: %s", DOOR_STATE(garage_door.current_state));
-                                notify_homekit_current_door_state_change(GarageDoorCurrentState::CURR_CLOSED);
-                                notify_homekit_target_door_state_change(GarageDoorTargetState::TGT_CLOSED); });
+    // Check door starts to open (skip for pure dry contact mode with single reed switch)
+    if (doorControlType != 3)
+    {
+        checkDoorMoving.detach(); // just in case!
+        checkDoorMoving.once_ms(2000, []()
+                                {
+                                    // If this timer fires (was not cancelled when we get notification that door is opening) then
+                                    // it is likely that there is an error and door did not move from its closed state.
+                                    checkDoorCompleted.detach();
+                                    ESP_LOGE(TAG, "Door is supposed to be opening but is not.  Current state: %s", DOOR_STATE(garage_door.current_state));
+                                    notify_homekit_current_door_state_change(GarageDoorCurrentState::CURR_CLOSED);
+                                    notify_homekit_target_door_state_change(GarageDoorTargetState::TGT_CLOSED); });
+    }
 #endif
     return;
 }
