@@ -83,27 +83,51 @@ void drycontact_loop()
 
     if (doorControlType == 3)
     {
+        // Single reed switch at open position, use 12-second timer for closing
+        static _millis_t closingStartTime = 0;
+
+        // Mark garage door as active for web interface
+        garage_door.active = true;
+
         if (dryContactDoorOpen)
         {
+            // At open position
             doorState = GarageDoorCurrentState::CURR_OPEN;
+            closingStartTime = 0;  // Reset closing timer
         }
-
-        if (dryContactDoorClose)
+        else if (previousDryContactDoorOpen && !dryContactDoorOpen)
         {
-            doorState = GarageDoorCurrentState::CURR_CLOSED;
+            // Just left open position - start 12-second closing timer
+            closingStartTime = _millis();
+            doorState = GarageDoorCurrentState::CURR_CLOSING;
         }
-
-        if (!dryContactDoorClose && !dryContactDoorOpen)
+        else if (closingStartTime > 0)
         {
-            if (previousDryContactDoorClose)
-            {
-                doorState = GarageDoorCurrentState::CURR_OPENING;
-            }
-            else if (previousDryContactDoorOpen)
+            // Currently closing
+            if (_millis() - closingStartTime < 12000)
             {
                 doorState = GarageDoorCurrentState::CURR_CLOSING;
             }
+            else
+            {
+                // 12 seconds elapsed - door is closed
+                doorState = GarageDoorCurrentState::CURR_CLOSED;
+                closingStartTime = 0;
+            }
         }
+        else if (garage_door.target_state == GarageDoorTargetState::TGT_OPEN && !dryContactDoorOpen)
+        {
+            // Target is OPEN but not at open position yet - show OPENING
+            doorState = GarageDoorCurrentState::CURR_OPENING;
+        }
+        else if (closingStartTime == 0 && !dryContactDoorOpen)
+        {
+            // Not in closing timer, not at open position, not commanded to open - must be closed
+            doorState = GarageDoorCurrentState::CURR_CLOSED;
+        }
+
+        // Update garage_door.current_state to match doorState
+        garage_door.current_state = doorState;
 
         previousDryContactDoorOpen = dryContactDoorOpen;
         previousDryContactDoorClose = dryContactDoorClose;

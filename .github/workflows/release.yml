@@ -19,9 +19,9 @@ jobs:
         with:
             submodules: true
 
-      - name: Tag
+      - name: Set release tag
         id: tag
-        uses: JinoArch/get-latest-tag@latest
+        run: echo "latestTag=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
 
       - name: Update version on manifest.json
         uses: amochkin/action-json@v1
@@ -48,7 +48,7 @@ jobs:
           mode: write
           file: docs/manifest.json
           property: builds.0.parts.0.path
-          value: firmware/homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.bin
+          value: firmware/homekit-ratgdo-dry-${{ steps.tag.outputs.latestTag }}.bin
           value_type: string
           
       - name: Output created (or overwritten) manifest.json
@@ -62,17 +62,10 @@ jobs:
       - name: Attach manifest.json
         uses: AButler/upload-release-assets@v3.0
         with:
-          files: "/home/runner/work/homekit-ratgdo/homekit-ratgdo/docs/manifest.json"
+          files: "docs/manifest.json"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           release-tag: ${{ steps.tag.outputs.latestTag }}
 
-      - name: Upload Release manifest.json
-        uses: wow-actions/download-upload@v1
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          url: https://github.com/ratgdo/homekit-ratgdo/releases/download/${{ steps.tag.outputs.latestTag }}/manifest.json
-          dir: docs/
-          commit_message: "Upload Latest manifest.json for ${{ steps.tag.outputs.latestTag }}"
 
       - uses: actions/cache@v3
         with:
@@ -98,9 +91,9 @@ jobs:
 
       - name: Rename Firmware Files
         run: |
-          mv .pio/build/ratgdo_esp8266_hV25/firmware.bin .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.bin
-          mv .pio/build/ratgdo_esp8266_hV25/firmware.elf .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.elf
-          mv .pio/build/ratgdo_esp8266_hV25/firmware.md5 .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.md5
+          mv .pio/build/ratgdo_esp8266_hV25/firmware.bin .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-dry-${{ steps.tag.outputs.latestTag }}.bin
+          mv .pio/build/ratgdo_esp8266_hV25/firmware.elf .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-dry-${{ steps.tag.outputs.latestTag }}.elf
+          mv .pio/build/ratgdo_esp8266_hV25/firmware.md5 .pio/build/ratgdo_esp8266_hV25/homekit-ratgdo-dry-${{ steps.tag.outputs.latestTag }}.md5
 
       - name: Attach Bundle - Firmware.bin
         uses: AButler/upload-release-assets@v3.0
@@ -109,27 +102,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           release-tag: ${{ steps.tag.outputs.latestTag }}
       
-      - name: Upload Release Asset - Firmware.bin
-        uses: wow-actions/download-upload@v1
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          url: https://github.com/ratgdo/homekit-ratgdo/releases/download/${{ steps.tag.outputs.latestTag }}/homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.bin
-          dir: docs/firmware/
-          commit_message: "Upload Latest Firmware: homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.bin"
     
-      - name: Upload Firmware.bin
-        uses: actions/upload-artifact@v4
-        with:
-          name: homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.bin
-          path: |
-            .pio/build/ratgdo_esp8266_hV25/*.bin
-
-      - name: Download Firmware.bin
-        uses: actions/download-artifact@v4
-        with:
-          name: homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.bin
-          path: |
-            docs/firmware/
 
       - name: Attach Bundle - Firmware.md5
         uses: AButler/upload-release-assets@v3.0
@@ -138,27 +111,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           release-tag: ${{ steps.tag.outputs.latestTag }}
     
-      - name: Upload Release Asset - Firmware.md5
-        uses: wow-actions/download-upload@v1
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          url: https://github.com/ratgdo/homekit-ratgdo/releases/download/${{ steps.tag.outputs.latestTag }}/homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.md5
-          dir: docs/firmware/
-          commit_message: "Upload Latest md5: homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.md5"
     
-      - name: Upload Firmware.bin
-        uses: actions/upload-artifact@v4
-        with:
-          name: homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.md5
-          path: |
-            .pio/build/ratgdo_esp8266_hV25/*.md5
-
-      - name: Download Firmware.md5
-        uses: actions/download-artifact@v4
-        with:
-          name: homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.md5
-          path: |
-            docs/firmware/
   
       - name: Attach Bundle - Firmware.elf
         uses: AButler/upload-release-assets@v3.0
@@ -167,52 +120,13 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           release-tag: ${{ steps.tag.outputs.latestTag }}
 
-      - name: Upload Release Asset - Firmware.elf
-        uses: wow-actions/download-upload@v1
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          url: https://github.com/ratgdo/homekit-ratgdo/releases/download/${{ steps.tag.outputs.latestTag }}/homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.elf 
-          dir: docs/firmware/
-          commit_message: "Upload Latest Firmware: homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.elf"
     
       - name: Upload Firmware.elf
         uses: actions/upload-artifact@v4
         with:
-          name: homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.elf
+          name: homekit-ratgdo-dry-${{ steps.tag.outputs.latestTag }}.elf
           path: |
             .pio/build/ratgdo_esp8266_hV25/*.elf
 
-      - name: Download Firmware.elf
-        uses: actions/download-artifact@v4
-        with:
-          name: homekit-ratgdo-${{ steps.tag.outputs.latestTag }}.elf
-          path: |
-            docs/firmware/
 
-      - name: Sleep for 2 minutes before pubhsing to Discord
-        run: sleep 120s
-        shell: bash
-
-      - name: Latest Release
-        if: ${{ github.event.release.prerelease == false }}
-        uses: SethCohen/github-releases-to-discord@v1.13.1
-        with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          color: "5723991"
-          username: "ratgdo"
-          avatar_url: "https://avatars.githubusercontent.com/u/144837877?s=200&v=4"
-          footer_title: "homekit-ratgdo"
-          footer_icon_url: "https://avatars.githubusercontent.com/u/144837877?s=200&v=4"
-          footer_timestamp: true
           
-      - name: Pre-Release
-        if: ${{ github.event.release.prerelease == true }}
-        uses: SethCohen/github-releases-to-discord@v1.13.1
-        with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          color: "5723991"
-          username: "ratgdo"
-          avatar_url: "https://avatars.githubusercontent.com/u/144837877?s=200&v=4"
-          footer_title: "Pre-Release: homekit-ratgdo"
-          footer_icon_url: "https://avatars.githubusercontent.com/u/144837877?s=200&v=4"
-          footer_timestamp: true  

@@ -147,13 +147,13 @@ const char *http_methods[] = {"HTTP_ANY", "HTTP_GET", "HTTP_HEAD", "HTTP_POST", 
 #endif
 // If not building in main github repo, then add -D GITUSER=your_userid to the compile line (no quotes, STRINGIFY adds that here)
 #ifndef GITUSER
-#define _GITUSER "ratgdo"
+#define _GITUSER "antongitt"
 #else
 #define _GITUSER STRINGIFY(GITUSER)
 #endif
 #ifndef GITREPO
 #ifdef ESP8266
-#define _GITREPO "homekit-ratgdo"
+#define _GITREPO "homekit-ratgdo-dry"
 #else
 #define _GITREPO "homekit-ratgdo32"
 #endif

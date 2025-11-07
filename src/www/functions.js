@@ -20,8 +20,8 @@ var setGDOcmds = {              // setGDO commands that are not sent from server
     softAPmode: false,
     factoryReset: false,
 };
-var gitUser = "ratgdo";         // default git user.
-var gitRepo = "homekit-ratgdo"; // default git repository.
+var gitUser = "antongitt";         // default git user.
+var gitRepo = "homekit-ratgdo-dry"; // default git repository.
 
 // https://stackoverflow.com/questions/7995752/detect-desktop-browser-not-mobile-with-javascript
 // const isTouchDevice = function () { return 'ontouchstart' in window || 'onmsgesturechange' in window; };
