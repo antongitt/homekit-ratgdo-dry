@@ -255,6 +255,22 @@ homekit_value_t target_door_state_get()
 
 void target_door_state_set(const homekit_value_t value)
 {
+    // Debounce duplicate commands from HomeKit (multiple hubs, network retries, etc.)
+    static uint8_t last_command = 0xFF;
+    static _millis_t last_command_time = 0;
+
+    // Ignore duplicate commands within 2 seconds
+    if (value.uint8_value == last_command &&
+        (_millis() - last_command_time) < 2000)
+    {
+        ESP_LOGW(TAG, "Ignoring duplicate door command %s within 2s (likely from multiple HomeKit hubs)",
+                 DOOR_STATE(value.uint8_value));
+        return;
+    }
+
+    last_command = value.uint8_value;
+    last_command_time = _millis();
+
     ESP_LOGD(TAG, "Set door state: %s", DOOR_STATE(value.uint8_value));
     switch (value.uint8_value)
     {
