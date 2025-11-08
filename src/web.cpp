@@ -1421,8 +1421,11 @@ void SSEBroadcastState(const char *data, BroadcastType type)
                 }
                 else if (type == RATGDO_STATUS)
                 {
-                    String IPaddrstr = IPAddress(subscription[i].clientIP).toString();
-                    ESP_LOGV(TAG, "Client %s (%s) send status SSE on channel %d, data: %s", IPaddrstr.c_str(), subscription[i].clientUUID.c_str(), i, data);
+                    // Use inline toString() to avoid String allocation for verbose logging
+                    // Only creates temporary String if VERBOSE logging is enabled
+                    ESP_LOGV(TAG, "Client %s (%s) send status SSE on channel %d, data: %s",
+                        IPAddress(subscription[i].clientIP).toString().c_str(),
+                        subscription[i].clientUUID.c_str(), i, data);
                     if (snprintf_P(writeBuffer, sizeof(writeBuffer), PSTR("event: message\ndata: %s\n\n"), data) >= (int)sizeof(writeBuffer))
                     {
                         // Will not fit in our write buffer, let system printf handle
